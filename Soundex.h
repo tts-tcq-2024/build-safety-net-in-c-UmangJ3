@@ -18,31 +18,44 @@ char getSoundexCode(char c) {
     }
 }
 
+char getFirstLetter(const char *name) {
+    return toupper(name[0]);
+}
+
+void padWithZeros(char *soundex, int &index) {
+    while (index < 4) {
+        soundex[index++] = '0';
+    }
+    soundex[4] = '\0';
+}
+
+bool isDuplicateCode(char currentCode, char lastCode) {
+    return currentCode == lastCode && currentCode != '0';
+}
+
+void encodeRemainingLetters(const char *name, char *soundex, int &index, char &lastCode) {
+    for (int i = 1; name[i] != '\0' && index < 4; i++) {
+        char currentCode = getSoundexCode(name[i]);
+        if (!isDuplicateCode(currentCode, lastCode)) {
+            if (currentCode != '0') {
+                soundex[index++] = currentCode;
+            }
+            lastCode = currentCode;
+        }
+    }
+}
+
 void generateSoundex(const char *name, char *soundex) {
     if (name == nullptr || soundex == nullptr || strlen(name) == 0) {
         soundex[0] = '\0';
         return;
     }
 
-    soundex[0] = toupper(name[0]);
-    int sIndex = 1;
+    soundex[0] = getFirstLetter(name);
+    int index = 1;
     char lastCode = getSoundexCode(name[0]);
 
-    for (int i = 1; name[i] != '\0' && sIndex < 4; i++) {
-        char code = getSoundexCode(name[i]);
-        if (code != '0' && code != lastCode) {
-            soundex[sIndex++] = code;
-            lastCode = code;
-        } else if (code != '0') {
-            lastCode = code;
-        }
-    }
-
-    while (sIndex < 4) {
-        soundex[sIndex++] = '0';
-    }
-
-    soundex[4] = '\0';
+    encodeRemainingLetters(name, soundex, index, lastCode);
+    padWithZeros(soundex, index);
 }
-
 #endif // SOUNDEX_H
