@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <string.h>
 
-char mapToSoundexCode(char c) {
+char getSoundexCode(char c) {
     switch (toupper(c)) {
         case 'B': case 'F': case 'P': case 'V': return '1';
         case 'C': case 'G': case 'J': case 'K': case 'Q': case 'S': case 'X': case 'Z': return '2';
@@ -48,7 +48,7 @@ void updateLastCode(char currentCode, char &lastCode) {
 }
 
 void processCharacter(char character, char *soundex, int &index, char &lastCode) {
-    char currentCode = mapToSoundexCode(character);
+    char currentCode = getSoundexCode(character);
     if (shouldEncode(currentCode, lastCode)) {
         appendSoundexCode(soundex, index, currentCode);
     }
@@ -61,15 +61,21 @@ void processRemainingLetters(const char *name, char *soundex, int &index, char &
     }
 }
 
-void generateSoundex(const char *name, char *soundex) {
+void handleEmptyOrNullInput(const char *name, char *soundex) {
     if (name == nullptr || soundex == nullptr || strlen(name) == 0) {
         soundex[0] = '\0';
+    }
+}
+
+void generateSoundex(const char *name, char *soundex) {
+    handleEmptyOrNullInput(name, soundex);
+    if (soundex[0] == '\0') {
         return;
     }
 
     soundex[0] = extractAndCapitalizeInitial(name);
     int index = 1;
-    char lastCode = mapToSoundexCode(name[0]);
+    char lastCode = getSoundexCode(name[0]);
 
     processRemainingLetters(name, soundex, index, lastCode);
     fillWithZeros(soundex, index);
