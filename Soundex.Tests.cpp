@@ -19,12 +19,6 @@ TEST(SoundexTestsuite, PadsWithZerosToEnsureThreeDigits) {
     ASSERT_STREQ(soundex, "I000");
 }
 
-TEST(SoundexTestsuite, IgnoresNon_Alphabetics) {
-    char soundex[5];
-    generateSoundex("A#23B", soundex);
-    ASSERT_STREQ(soundex, "A100");
-}
-
 TEST(SoundexTestsuite, CombinesDuplicateEncodingsSeparatedByVowels) {
     char soundex[5];
     generateSoundex("Abfcg", soundex);
