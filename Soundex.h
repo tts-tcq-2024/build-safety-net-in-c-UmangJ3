@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <string.h>
 
-char getSoundexCode(char c) {
+char mapToSoundexCode(char c) {
     switch (toupper(c)) {
         case 'B': case 'F': case 'P': case 'V': return '1';
         case 'C': case 'G': case 'J': case 'K': case 'Q': case 'S': case 'X': case 'Z': return '2';
@@ -26,6 +26,7 @@ void fillWithZeros(char *soundex, int &index) {
     }
     soundex[4] = '\0';
 }
+
 bool isCodeDuplicate(char currentCode, char previousCode) {
     return currentCode == previousCode && currentCode != '0';
 }
@@ -36,16 +37,27 @@ void appendSoundexCode(char *soundex, int &index, char code) {
     }
 }
 
-// Function to process and encode the remaining letters of the name
+bool shouldEncode(char currentCode, char lastCode) {
+    return currentCode != '0' && !isCodeDuplicate(currentCode, lastCode);
+}
+
+void updateLastCode(char currentCode, char &lastCode) {
+    if (currentCode != '0') {
+        lastCode = currentCode;
+    }
+}
+
+void processCharacter(char character, char *soundex, int &index, char &lastCode) {
+    char currentCode = mapToSoundexCode(character);
+    if (shouldEncode(currentCode, lastCode)) {
+        appendSoundexCode(soundex, index, currentCode);
+    }
+    updateLastCode(currentCode, lastCode);
+}
+
 void processRemainingLetters(const char *name, char *soundex, int &index, char &lastCode) {
     for (int i = 1; name[i] != '\0'; i++) {
-        char currentCode = getSoundexCode(name[i]);
-        if (!isCodeDuplicate(currentCode, lastCode) && currentCode != '0') {
-            appendSoundexCode(soundex, index, currentCode);
-        }
-        if (currentCode != '0') {
-            lastCode = currentCode;
-        }
+        processCharacter(name[i], soundex, index, lastCode);
     }
 }
 
@@ -57,11 +69,10 @@ void generateSoundex(const char *name, char *soundex) {
 
     soundex[0] = extractAndCapitalizeInitial(name);
     int index = 1;
-    char lastCode = getSoundexCode(name[0]);
+    char lastCode = mapToSoundexCode(name[0]);
 
     processRemainingLetters(name, soundex, index, lastCode);
     fillWithZeros(soundex, index);
 }
 
 #endif // SOUNDEX_H
-
