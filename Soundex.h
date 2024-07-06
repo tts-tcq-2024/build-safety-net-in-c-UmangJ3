@@ -61,8 +61,16 @@ void processRemainingLetters(const char *name, char *soundex, int &index, char &
     }
 }
 
+bool isNullOrEmpty(const char *name) {
+    return name == nullptr || strlen(name) == 0;
+}
+
+bool isInvalidInput(const char *name, char *soundex) {
+    return soundex == nullptr || isNullOrEmpty(name);
+}
+
 void handleEmptyOrNullInput(const char *name, char *soundex) {
-    if (name == nullptr || soundex == nullptr || strlen(name) == 0) {
+    if (isInvalidInput(name, soundex)) {
         soundex[0] = '\0';
     }
 }
