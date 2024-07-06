@@ -5,68 +5,69 @@
 #include <string.h>
 
 char getSoundexCode(char c) {
-    switch (toupper(c)) {
-        case 'B': case 'F': case 'P': case 'V': return '1';
-        case 'C': case 'G': case 'J': case 'K': case 'Q': case 'S': case 'X': case 'Z': return '2';
-        case 'D': case 'T': return '3';
-        case 'L': return '4';
-        case 'M': case 'N': return '5';
-        case 'R': return '6';
-        default: return '0';
+    static const char soundexTable[26] = {
+        '0', '1', '2', '3', '0', '1', '2', '0', '0', '2', '2', '4', '5', '5', '0', '1', '2', '6', '2', '3', '0', '1', '0', '2', '0', '2'
+    };
+
+    c = toupper(c);
+    if (c < 'A' || c > 'Z') {
+        return '0';
     }
+
+    return soundexTable[c - 'A'];
 }
 
 char extractAndCapitalizeInitial(const char *name) {
     return toupper(name[0]);
 }
 
-void fillWithZeros(char *soundex, int &index) {
-    while (index < 4) {
-        soundex[index++] = '0';
+void fillWithZeros(char *soundex, int *index) {
+    while (*index < 4) {
+        soundex[(*index)++] = '0';
     }
     soundex[4] = '\0';
 }
 
-bool isCodeDuplicate(char currentCode, char previousCode) {
+int isCodeDuplicate(char currentCode, char previousCode) {
     return currentCode == previousCode && currentCode != '0';
 }
 
-void appendSoundexCode(char *soundex, int &index, char code) {
-    if (index < 4) {
-        soundex[index++] = code;
+void appendSoundexCode(char *soundex, int *index, char code) {
+    if (*index < 4) {
+        soundex[(*index)++] = code;
     }
 }
 
-bool shouldEncode(char currentCode, char lastCode) {
+int shouldEncode(char currentCode, char lastCode) {
     return currentCode != '0' && !isCodeDuplicate(currentCode, lastCode);
 }
 
-void updateLastCode(char currentCode, char &lastCode) {
+void updateLastCode(char currentCode, char *lastCode) {
     if (currentCode != '0') {
-        lastCode = currentCode;
+        *lastCode = currentCode;
     }
 }
 
-void processCharacter(char character, char *soundex, int &index, char &lastCode) {
+void processCharacter(char character, char *soundex, int *index, char *lastCode) {
     char currentCode = getSoundexCode(character);
-    if (shouldEncode(currentCode, lastCode)) {
+    if (shouldEncode(currentCode, *lastCode)) {
         appendSoundexCode(soundex, index, currentCode);
     }
     updateLastCode(currentCode, lastCode);
 }
 
-void processRemainingLetters(const char *name, char *soundex, int &index, char &lastCode) {
+void processRemainingLetters(const char *name, char *soundex, int *index, char *lastCode) {
     for (int i = 1; name[i] != '\0'; i++) {
         processCharacter(name[i], soundex, index, lastCode);
     }
 }
 
-bool isNullOrEmpty(const char *name) {
-    return name == nullptr || strlen(name) == 0;
+int isNullOrEmpty(const char *name) {
+    return name == NULL || strlen(name) == 0;
 }
 
-bool isInvalidInput(const char *name, char *soundex) {
-    return soundex == nullptr || isNullOrEmpty(name);
+int isInvalidInput(const char *name, char *soundex) {
+    return soundex == NULL || isNullOrEmpty(name);
 }
 
 void handleEmptyOrNullInput(const char *name, char *soundex) {
@@ -85,8 +86,8 @@ void generateSoundex(const char *name, char *soundex) {
     int index = 1;
     char lastCode = getSoundexCode(name[0]);
 
-    processRemainingLetters(name, soundex, index, lastCode);
-    fillWithZeros(soundex, index);
+    processRemainingLetters(name, soundex, &index, &lastCode);
+    fillWithZeros(soundex, &index);
 }
 
 #endif // SOUNDEX_H
